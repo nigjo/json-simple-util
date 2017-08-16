@@ -1,12 +1,3 @@
-/*
- * Decompiled with CFR 0_122.
- * 
- * Could not load the following classes:
- *  org.json.simple.JSONArray
- *  org.json.simple.JSONObject
- *  org.json.simple.parser.JSONParser
- *  org.json.simple.parser.ParseException
- */
 package de.nigjo.json.util;
 
 import java.io.BufferedReader;
@@ -42,38 +33,9 @@ public class JSONMappingManager
 
   public static <J> J parse(Path infile, Class<J> type) throws IOException
   {
-    BufferedReader in = Files.newBufferedReader(infile, StandardCharsets.UTF_8);
-    Throwable throwable = null;
-    try
+    try(BufferedReader in = Files.newBufferedReader(infile, StandardCharsets.UTF_8))
     {
-      J j = JSONMappingManager.parse(in, type);
-      return j;
-    }
-    catch(IOException ex)
-    {
-      throwable = ex;
-      throw ex;
-    }
-    finally
-    {
-      if(in != null)
-      {
-        if(throwable != null)
-        {
-          try
-          {
-            in.close();
-          }
-          catch(Throwable throwable3)
-          {
-            throwable.addSuppressed(throwable3);
-          }
-        }
-        else
-        {
-          in.close();
-        }
-      }
+      return JSONMappingManager.parse(in, type);
     }
   }
 
@@ -99,7 +61,7 @@ public class JSONMappingManager
 
   private <J> J convert(Object ioResult, Class<J> type)
   {
-    this.mappings = new HashMap();
+    this.mappings = new HashMap<>();
     JSONMappingManager.log(() -> "--scanning----------");
     this.scanClass(type);
     JSONMappingManager.log(() -> "--mapping-----------");
@@ -115,8 +77,8 @@ public class JSONMappingManager
     {
       try
       {
-        Constructor<J> resultCreator = resultType.getConstructor(new Class[0]);
-        J result = resultCreator.newInstance(new Object[0]);
+        Constructor<J> resultCreator = resultType.getConstructor();
+        J result = resultCreator.newInstance();
         for(MappingInfo info : infos.values())
         {
           this.map((JSONObject)source, result, info);
@@ -132,13 +94,13 @@ public class JSONMappingManager
         throw new IllegalArgumentException(ex);
       }
     }
-    JSONMappingManager.log(() -> "ergebnistyp fuer " + resultType.getName()
-        + " nicht bekannt");
+    JSONMappingManager.log(
+        () -> "ergebnistyp fuer " + resultType.getName() + " nicht bekannt");
     return null;
   }
 
-  private void map(JSONObject source, Object result, MappingInfo info) throws
-      ReflectiveOperationException
+  private void map(JSONObject source, Object result, MappingInfo info)
+      throws ReflectiveOperationException
   {
     Object parameterValue = source.get((Object)info.parameterName);
     if(parameterValue == null)
@@ -169,26 +131,26 @@ public class JSONMappingManager
           JSONMappingManager.log(() -> "no mapping for arrays");
           break;
         }
-        String typeName = info.data.getGenericType().getTypeName();
-        String elementName = typeName.substring(typeName.indexOf(60) + 1, typeName.
-            lastIndexOf(62));
-        info.kind = MappingType.ARRAY;
-        try
+        if(info.mapping != null)
         {
-          //Class<?> elementClass = Class.forName(elementName);
-          final Class<? extends Object> mappingClass = Class.forName(elementName);
-          List mapped =
-              (List)array.stream()
-                  .map(e -> this.map(e, mappingClass))
-                  .collect(Collectors.toList());
-          this.set(info, result, mapped);
-        }
-        catch(ClassNotFoundException ex)
-        {
-          JSONMappingManager.log(() -> ex.toString());
+          try
+          {
+            //Class<?> elementClass = Class.forName(elementName);
+            @SuppressWarnings("unchecked")
+            List<?> mapped =
+                (List)array.stream()
+                    .map(e -> this.map(e, info.mapping))
+                    .collect(Collectors.toList());
+            this.set(info, result, mapped);
+          }
+          catch(ClassNotFoundException ex)
+          {
+            JSONMappingManager.log(() -> ex.toString());
+          }
         }
         break;
       }
+
       case OBJECT:
       {
         if(parameterValue instanceof Long)
@@ -239,7 +201,7 @@ public class JSONMappingManager
         JSONMappingManager.log(() -> "- scanning skipped. already scanned.");
         return;
       }
-      infos = new LinkedHashMap<String, MappingInfo>();
+      infos = new LinkedHashMap<>();
       this.mappings.put(type, infos);
     }
     for(Field field : declaredFields = type.getDeclaredFields())
@@ -261,7 +223,7 @@ public class JSONMappingManager
       JSONMappingManager.log(() -> "  - requiered: " + info.requiered);
       info.nullable = annotation.nullable();
       JSONMappingManager.log(() -> "  - nullable: " + info.nullable);
-      Class fieldType = field.getType();
+      Class<?> fieldType = field.getType();
       try
       {
         info.setter = type.getDeclaredMethod("set" + Character.toUpperCase(
@@ -298,8 +260,8 @@ public class JSONMappingManager
         info.kind = MappingType.ARRAY;
         try
         {
-          Class elementClass = Class.forName(elementName);
-          this.scanClass(elementClass);
+          info.mapping = Class.forName(elementName);
+          this.scanClass(info.mapping);
         }
         catch(ClassNotFoundException ex)
         {
@@ -319,18 +281,13 @@ public class JSONMappingManager
 
   private static class MappingInfo
   {
-    String parameterName;
-    MappingType kind;
-    Class<?> mapping;
-    boolean requiered;
-    boolean nullable;
-    Field data;
-    Method setter;
-
-    private MappingInfo()
-    {
-    }
-
+    private String parameterName;
+    private MappingType kind;
+    private Class<?> mapping;
+    private boolean requiered;
+    private boolean nullable;
+    private Field data;
+    private Method setter;
   }
 
   private static enum MappingType
@@ -341,11 +298,6 @@ public class JSONMappingManager
     NUMBER,
     BOOLEAN,
     NULL;
-
-    private MappingType()
-    {
-    }
-
   }
 
 }
