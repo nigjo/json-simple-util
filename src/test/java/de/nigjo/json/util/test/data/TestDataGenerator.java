@@ -1,6 +1,5 @@
 package de.nigjo.json.util.test.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TestDataGenerator
@@ -102,17 +101,9 @@ public class TestDataGenerator
 
   public static PropertyContainer createReadmeDemoResult()
   {
-    PropertyContainer c = new PropertyContainer();
-    c.name = "Demodata";
-    c.data = new ArrayList<>();
-    PropertyData item = new PropertyData();
-    item.key = "key1";
-    item.value = "value1";
-    c.data.add(item);
-    item = new PropertyData();
-    item.key = "key2";
-    item.value = "value2";
-    c.data.add(item);
+    PropertyContainer c = new PropertyContainer("Demodata");
+    c.addData(new PropertyData("key1", "value1"));
+    c.addData(new PropertyData("key2", "value2"));
     return c;
   }
 
