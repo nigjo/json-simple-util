@@ -1,0 +1,111 @@
+{
+  "title": "Demonstration JSON AutoGUI Prototyp",
+  "icon": "selfmade.punkt.blau",
+  "groups": [
+    {
+      "name": "Gruppe 1",
+      "column": "links",
+      "row": "oben",
+      "values": [
+        {
+          "name": "Aktiv",
+          "value": true,
+          "type": "boolean"
+        },
+        {
+          "name": "Wert 1",
+          "value": 42,
+          "type": "int"
+        },
+        {
+          "_comment": [
+            "name=Wert 2",
+            "value=23.45",
+            "type=float"
+          ],
+          "name": "Wert 2",
+          "type": "components",
+          "components": [
+            {
+              "column": "mainlabel",
+              "type": "label",
+              "value": "Wert 2"
+            },
+            {
+              "column": "shortsign",
+              "type": "label",
+              "value": "µ"
+            },
+            {
+              "column": "input",
+              "type": "float",
+              "value": 23.45
+            },
+            {
+              "column": "unit",
+              "type": "label",
+              "value": "[°]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gruppe 2",
+      "column": "links",
+      "row": "unten",
+      "groups": [
+        {
+          "name": "Vornamen",
+          "column": "unten_links",
+          "row": "unten_1",
+          "values": [
+            {
+              "name": "Name A",
+              "value": "Klaus",
+              "type": "string"
+            },
+            {
+              "name": "Name B",
+              "value": "Peter",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "Nachnamen",
+          "column": "unten_rechts",
+          "row": "unten_1",
+          "values": [
+            {
+              "name": "deutsch",
+              "value": "Müller",
+              "type": "string"
+            },
+            {
+              "name": "english",
+              "value": "Miller",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "_comment": [
+    "Gruppe 1",
+    "  Wert 1 = 42",
+    "  Wert 2 = 23.45",
+    "",
+    "Gruppe 2",
+    "  aktiv = true",
+    "  Vornamen",
+    "    Name A = Klaus",
+    "    Name B = Peter",
+    "",
+    "  Nachnamen",
+    "    deutsch = Müller",
+    "    english = Miller"
+  ]
+}
+
