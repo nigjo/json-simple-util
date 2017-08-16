@@ -1,4 +1,4 @@
-# json-simple-util
+# JSON.simple Utils
 
 Utilities to map JSON Data to POJOs with [JSON.simple][jsonsimple].
 
@@ -28,24 +28,24 @@ Otherwise the data is written to the field directly.
 
     class PropertyContainer {
       @JSONParameter
-      String name;
+      private String name;
       @JSONParameter(name = "properties")
-      List<PropertyData> data;
+      private List<PropertyData> data;
     }
 
 `PropertyData.class`:
     
     class PropertyData {
       @JSONParameter
-      String key;
+      private String key;
       @JSONParameter
-      String value;
+      private String value;
     }
 
-`parse()`
+`parse()`:
 
     PropertyContainer parse(Path infile){
-      return JSONMappingManager.parse(infile, PropertyContainer.class);
+      return JSONUtilities.parse(infile, PropertyContainer.class);
     }
 
 [jsonsimple]: https://github.com/fangyidong/json-simple

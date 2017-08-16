@@ -4,13 +4,13 @@
  * Could not load the following classes:
  *  de.nigjo.json.util.JSONParameter
  */
-package de.nigjo.json.util.test.data;
+package de.nigjo.json.util.testdata;
 
 import java.util.List;
 import java.util.Objects;
 
 import de.nigjo.json.util.JSONParameter;
-import static de.nigjo.json.util.test.data.AutoGuiDefinition.printArray;
+import static de.nigjo.json.util.testdata.AutoGuiDefinition.printArray;
 
 public class Value
 {

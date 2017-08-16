@@ -1,4 +1,4 @@
-package de.nigjo.json.util.test.data;
+package de.nigjo.json.util.testdata;
 
 import de.nigjo.json.util.JSONParameter;
 import java.util.ArrayList;
