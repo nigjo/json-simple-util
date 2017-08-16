@@ -6,6 +6,11 @@ The only annotation needed is `@JSONParameter` on your fields you want to be map
 to the JSON data. If there are propper setters in the class, these will be used.
 Otherwise the data is written to the field directly.
 
+> The current version is not fully JSON complient and in alpha phase.
+
+> This is a lightweight library to process JSON files. If you wish to do more fancy
+> stuff refere to the [Jackson][jackson] Suite.
+
 ## Sample
 
 `demoproperties.json`:
@@ -48,4 +53,6 @@ Otherwise the data is written to the field directly.
       return JSONUtilities.parse(infile, PropertyContainer.class);
     }
 
+[simpleutils]: https://github.com/nigjo/json-simple-util
 [jsonsimple]: https://github.com/fangyidong/json-simple
+[jackson]: https://github.com/FasterXML
