@@ -77,5 +77,6 @@ Any value defined here will override the pom.xml file value but is only applicab
         <org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.blankLinesAfterClassHeader>0</org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.blankLinesAfterClassHeader>
         <org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.methodDeclBracePlacement>NEW_LINE</org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.methodDeclBracePlacement>
         <org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.spaceBeforeWhileParen>false</org-netbeans-modules-editor-indent.text.x-java.CodeStyle.project.spaceBeforeWhileParen>
+        <netbeans.hint.license>apache20</netbeans.hint.license>
     </properties>
 </project-shared-configuration>
