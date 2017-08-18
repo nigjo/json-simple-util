@@ -354,7 +354,7 @@ class JSONMappingManager
         info.kind = MappingType.ARRAY;
         try
         {
-          info.mapping = Class.forName(elementName);
+          info.mapping = type.getClassLoader().loadClass(elementName);
           this.scanClass(info.mapping);
         }
         catch(ClassNotFoundException ex)
