@@ -27,6 +27,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import de.nigjo.json.util.core.JSONConverter;
+import de.nigjo.json.util.core.JSONCreator;
+
 public class JSONUtilities
 {
 
@@ -44,18 +47,28 @@ public class JSONUtilities
     try
     {
       Object result = p.parse(input);
-      return JSONMappingManager.convertResult(result, type);
+      if(result instanceof JSONObject)
+      {
+        return JSONConverter.readObject((JSONObject)result, type);
+      }
+      else if(type.isInstance(result))
+      {
+        return type.cast(result);
+      }
+      else
+      {
+        throw new IOException("data does not contain a JSONObject.");
+      }
     }
     catch(ParseException ex)
     {
       throw new IOException((Throwable)ex);
     }
   }
-  
-  
+
   public static void write(Writer output, Object sourcedata) throws IOException
   {
-    JSONObject jsondata = JSONMappingManager.convertToJSON(sourcedata);
+    JSONObject jsondata = JSONCreator.createObject(sourcedata);
 
     JSONObject.writeJSONString(jsondata, output);
   }

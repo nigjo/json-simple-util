@@ -16,45 +16,25 @@
 package de.nigjo.json.util;
 
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.nigjo.json.util.testdata.AutoGuiDefinition;
 import de.nigjo.json.util.testdata.PropertyContainer;
 import de.nigjo.json.util.testdata.TestDataGenerator;
 
+/**
+ * test class to check the conversion from JSON data to POJOs.
+ * 
+ * @author Jens Hofschröer
+ */
 public class JSONParserTest
 {
-  @BeforeClass
-  public static void setDebugMode() throws Exception
-  {
-    if(Boolean.getBoolean("test.debug") || Boolean.getBoolean("test.debug.parser"))
-    {
-      Field debug = JSONMappingManager.class.getDeclaredField("debug");
-      debug.setAccessible(true);
-      debug.set(null, true);
-    }
-  }
-
-  @AfterClass
-  public static void resetDebugMode() throws Exception
-  {
-    if(Boolean.getBoolean("test.debug") || Boolean.getBoolean("test.debug.parser"))
-    {
-      Field debug = JSONMappingManager.class.getDeclaredField("debug");
-      debug.setAccessible(true);
-      debug.set(null, false);
-    }
-  }
-
   @Test
   public void testParse_Path_Class() throws Exception
   {
