@@ -15,15 +15,12 @@
  */
 package de.nigjo.json.util.core;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import static de.nigjo.json.util.core.JSONMappingManager.log;
 
 /**
  *
@@ -66,6 +63,7 @@ public class JSONCreator
       {
         for(MappingInfo info : infos.values())
         {
+          JSONMappingManager.log(() -> "mapping " + info.parameterName);
           switch(info.kind)
           {
             case BOOLEAN:
@@ -75,6 +73,7 @@ public class JSONCreator
               break;
             case OBJECT:
               //TODO: mapping
+              JSONMappingManager.log(() -> "no mapping for object!");
               break;
             case ARRAY:
               Object data = get(info, source);
@@ -102,13 +101,12 @@ public class JSONCreator
         throw new IllegalStateException(ex);
       }
     }
-    log(() -> "unkown mapping for " + source.getClass());
+    JSONMappingManager.log(() -> "unkown mapping for " + source.getClass());
     return null;
   }
 
   @SuppressWarnings("unchecked")
-  private void put(JSONObject jo, MappingInfo info,
-      Object source)
+  private void put(JSONObject jo, MappingInfo info, Object source)
       throws ReflectiveOperationException
   {
     Object result = get(info, source);
@@ -125,8 +123,8 @@ public class JSONCreator
     }
   }
 
-  private Object get(MappingInfo info, Object source) throws IllegalAccessException,
-      IllegalArgumentException, SecurityException, InvocationTargetException
+  private Object get(MappingInfo info, Object source)
+      throws ReflectiveOperationException
   {
     Object result;
     if(info.getter != null)
