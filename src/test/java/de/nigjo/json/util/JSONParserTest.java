@@ -27,10 +27,11 @@ import org.junit.Test;
 import de.nigjo.json.util.testdata.AutoGuiDefinition;
 import de.nigjo.json.util.testdata.PropertyContainer;
 import de.nigjo.json.util.testdata.TestDataGenerator;
+import de.nigjo.json.util.testdata.UndefinedValues;
 
 /**
  * test class to check the conversion from JSON data to POJOs.
- * 
+ *
  * @author Jens Hofschröer
  */
 public class JSONParserTest
@@ -67,6 +68,19 @@ public class JSONParserTest
         StandardCharsets.UTF_8))
     {
       Object result = JSONUtilities.parse(in, PropertyContainer.class);
+      Assert.assertEquals(expResult, result);
+    }
+  }
+
+  @Test
+  public void testMappedDemo() throws Exception
+  {
+    UndefinedValues expResult = TestDataGenerator.createMappedDemoResult();
+    try(InputStreamReader in = new InputStreamReader(
+        JSONParserTest.class.getResourceAsStream("testdata/values.json"),
+        StandardCharsets.UTF_8))
+    {
+      Object result = JSONUtilities.parse(in, UndefinedValues.class);
       Assert.assertEquals(expResult, result);
     }
   }

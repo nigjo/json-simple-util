@@ -16,6 +16,7 @@
 package de.nigjo.json.util.testdata;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 public class TestDataGenerator
 {
@@ -124,6 +125,29 @@ public class TestDataGenerator
 
   private TestDataGenerator()
   {
+  }
+
+  public static UndefinedValues createMappedDemoResult()
+  {
+    UndefinedValues values = new UndefinedValues();
+
+    values.caption = "testdata";
+    Value wert1 = new Value();
+    wert1.setName("Wert 1");
+    wert1.setValue(42);
+    wert1.setType("int");
+    Value aktiv = new Value();
+    aktiv.setName("Aktiv");
+    aktiv.setValue(true);
+    aktiv.setType("boolean");
+    Value unsinn = new Value();
+
+    values.values = new LinkedHashMap<>();
+    values.values.put("wert1", wert1);
+    values.values.put("Aktiv", aktiv);
+    values.values.put("Unsinn", unsinn);
+
+    return values;
   }
 
 }

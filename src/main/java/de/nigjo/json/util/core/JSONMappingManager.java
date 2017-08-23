@@ -16,6 +16,7 @@
 package de.nigjo.json.util.core;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +45,11 @@ class JSONMappingManager
 
   public void scanClass(Class<?> type)
   {
-    if(mappings == null)
+    if(this.mappings == null)
     {
-      mappings = new LinkedHashMap<>();
+      this.mappings = new HashMap<>();
     }
+
     LinkedHashMap<String, MappingInfo> infos;
     JSONMappingManager.log(() -> "scanning " + type.getName());
     JSONMappingManager jSONMappingManager = this;
@@ -124,17 +126,58 @@ class JSONMappingManager
       else if(fieldType.isArray())
       {
         info.kind = MappingType.ARRAY;
-        this.scanClass(fieldType.getComponentType());
+        Class<?> componentType = fieldType.getComponentType();
+        if(!componentType.isPrimitive())
+        {
+          this.scanClass(componentType);
+      }
+      }
+      else if(fieldType.isPrimitive())
+      {
+        switch(fieldType.getName())
+        {
+          case "byte":
+          case "short":
+          case "int":
+          case "long":
+          case "float":
+          case "double":
+            info.kind = MappingType.NUMBER;
+            break;
+          case "boolean":
+            info.kind = MappingType.BOOLEAN;
+            break;
+        }
       }
       else if(List.class.equals(fieldType))
       {
         String typeName = field.getGenericType().getTypeName();
-        String elementName = typeName.substring(typeName.indexOf(60) + 1, typeName.
-            lastIndexOf(62));
+        String elementName = typeName.substring(typeName.indexOf('<') + 1,
+            typeName.lastIndexOf('>')).trim();
         JSONMappingManager.log(() -> "  - listType: " + elementName);
         info.kind = MappingType.ARRAY;
         try
         {
+          //use same classloader as for parent type
+          info.mapping = type.getClassLoader().loadClass(elementName);
+          this.scanClass(info.mapping);
+        }
+        catch(ClassNotFoundException ex)
+        {
+          JSONMappingManager.log(() -> ex.toString());
+        }
+      }
+      else if(Map.class.equals(fieldType))
+      {
+        info.kind = MappingType.OBJECT;
+        String typeName = field.getGenericType().getTypeName();
+        String elementName = typeName.substring(
+            typeName.indexOf(',', typeName.indexOf('<')) + 1, typeName.lastIndexOf('>'))
+            .trim();
+        JSONMappingManager.log(() -> "  - valueType: " + elementName);
+        try
+        {
+          //use same classloader as for parent type
           info.mapping = type.getClassLoader().loadClass(elementName);
           this.scanClass(info.mapping);
         }

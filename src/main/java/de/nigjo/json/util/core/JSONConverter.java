@@ -17,14 +17,17 @@ package de.nigjo.json.util.core;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
+ * Helperclass to convert JSON Items to Java Classes.
  *
  * @author Jens Hofschröer
  */
@@ -43,17 +46,36 @@ public class JSONConverter
     return converter.convert(jsonObject, type);
   }
 
+  public static <J> List<J> readArray(JSONArray source, Class<J> elementType)
+  {
+    JSONConverter reader = new JSONConverter();
+    return reader.convertArray(source, elementType);
+  }
+
+  private <J> List<J> convertArray(JSONArray ioResult, Class<J> elementType)
+  {
+    JSONMappingManager.log(() -> "--scanning----------");
+    mm.scanClass(elementType);
+    JSONMappingManager.log(() -> "--mapping-----------");
+    @SuppressWarnings(value = "unchecked")
+    List<J> mapped =
+        (List)ioResult.stream().
+            map((e) -> this.mapUnknown(e, elementType)).collect(Collectors.toList());
+    JSONMappingManager.log(() -> "--done--------------");
+    return mapped;
+  }
+
   private <J> J convert(Object ioResult, Class<J> type)
   {
     JSONMappingManager.log(() -> "--scanning----------");
     mm.scanClass(type);
     JSONMappingManager.log(() -> "--mapping-----------");
-    J result = this.mapToData(ioResult, type);
+    J result = this.mapUnknown(ioResult, type);
     JSONMappingManager.log(() -> "--done--------------");
     return type.cast(result);
   }
 
-  private <J> J mapToData(Object source, Class<J> resultType)
+  private <J> J mapUnknown(Object source, Class<J> resultType)
   {
     Map<String, MappingInfo> infos = this.mm.getInfos(resultType);
     if(infos != null)
@@ -64,7 +86,7 @@ public class JSONConverter
         J result = resultCreator.newInstance();
         for(MappingInfo info : infos.values())
         {
-          this.mapToData((JSONObject)source, result, info);
+          this.mapObject((JSONObject)source, result, info);
         }
         return resultType.cast(result);
       }
@@ -82,22 +104,72 @@ public class JSONConverter
     return null;
   }
 
-  private void mapToData(JSONObject source, Object result, MappingInfo info)
+  private void mapObject(JSONObject source, Object result, MappingInfo info)
       throws ReflectiveOperationException
   {
-    Object parameterValue = source.get((Object)info.parameterName);
+    JSONMappingManager.log(() ->
+        "mapping " + result.getClass().getSimpleName() + '.' + info.parameterName);
+    Object parameterValue = source.get(info.parameterName);
     if(parameterValue == null)
     {
-      if(!info.nullable && info.requiered)
+      boolean nullSet = source.containsKey(info.parameterName);
+      if(info.requiered && !nullSet)
       {
-        throw new IllegalArgumentException("missing parameter " + info.parameterName);
+        throw new IllegalArgumentException("missing requiered parameter "
+            + info.parameterName + " for " + result.getClass().getName());
+      }
+      if(nullSet)
+      {
+        if(info.requiered && !info.nullable)
+        {
+          throw new IllegalArgumentException("requiered parameter " + info.parameterName
+              + " for " + result.getClass().getName() + " can not be null");
+        }
+        if(info.nullable)
+        {
+          set(info, result, null);
+        }
       }
       return;
     }
     switch(info.kind)
     {
+      case NUMBER:
+        if(parameterValue instanceof Number)
+        {
+          switch(info.data.getType().getName())
+          {
+            case "byte":
+            case "java.lang.Byte":
+              this.set(info, result, ((Number)parameterValue).byteValue());
+              break;
+            case "short":
+            case "java.lang.Short":
+              this.set(info, result, ((Number)parameterValue).byteValue());
+              break;
+            case "int":
+            case "java.lang.Integer":
+              this.set(info, result, ((Number)parameterValue).intValue());
+              break;
+            case "long":
+            case "java.lang.Long":
+              this.set(info, result, ((Number)parameterValue).longValue());
+              break;
+            case "float":
+            case "java.lang.Float":
+              this.set(info, result, ((Number)parameterValue).floatValue());
+              break;
+            case "double":
+            case "java.lang.Double":
+              this.set(info, result, ((Number)parameterValue).doubleValue());
+              break;
       default:
-        JSONMappingManager.log(() -> "no mapping for " + info.kind.name());
+              JSONMappingManager.log(
+                  () -> "unknown number format " + info.data.getType());
+              this.set(info, result, parameterValue);
+        break;
+          }
+        }
         break;
       case STRING:
         this.set(info, result, parameterValue);
@@ -113,11 +185,10 @@ public class JSONConverter
         {
           try
           {
-            //Class<?> elementClass = Class.forName(elementName);
             @SuppressWarnings("unchecked")
             List<?> mapped =
                 (List)array.stream()
-                    .map(e -> this.mapToData(e, info.mapping))
+                    .map(e -> this.mapUnknown(e, info.mapping))
                     .collect(Collectors.toList());
             this.set(info, result, mapped);
           }
@@ -131,9 +202,27 @@ public class JSONConverter
         if(parameterValue instanceof Long)
         {
           this.set(info, result, ((Long)parameterValue).intValue());
-          break;
         }
+        else if(parameterValue instanceof JSONObject)
+        {
+          // simple Map?
+          Map<String, Object> mappedResult = new LinkedHashMap<>();
+          @SuppressWarnings("unchecked")
+          Set<Map.Entry<?, ?>> entrys = ((JSONObject)parameterValue).entrySet();
+          for(Map.Entry<?, ?> entry : entrys)
+          {
+            Object mapped = mapUnknown(entry.getValue(), info.mapping);
+            mappedResult.put((String)entry.getKey(), mapped);
+          }
+          this.set(info, result, mappedResult);
+        }
+        else
+        {
         this.set(info, result, parameterValue);
+        }
+        break;
+      default:
+        JSONMappingManager.log(() -> "no mapping for " + info.kind.name());
         break;
     }
   }

@@ -1,0 +1,17 @@
+{
+  "caption": "testdata",
+  "values": {
+    "wert1": {
+      "name": "Wert 1",
+      "value": 42,
+      "type": "int"
+    },
+    "Aktiv": {
+      "name": "Aktiv",
+      "value": true,
+      "type": "boolean"
+    },
+    "Unsinn": {
+    }
+  }
+}

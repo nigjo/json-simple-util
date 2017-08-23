@@ -22,7 +22,10 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -57,12 +60,48 @@ public class JSONUtilities
       }
       else
       {
-        throw new IOException("data does not contain a JSONObject.");
+        throw new IOException("data does not contain a JSON Object");
       }
     }
     catch(ParseException ex)
     {
-      throw new IOException((Throwable)ex);
+      throw new IOException(ex);
+    }
+  }
+
+  public static <J> List<J> parseArray(Path infile, Class<J> elementType)
+      throws IOException
+  {
+    try(BufferedReader in = Files.newBufferedReader(infile, StandardCharsets.UTF_8))
+    {
+      return parseArray(in, elementType);
+    }
+  }
+
+  public static <J> List<J> parseArray(Reader in, Class<J> elementType) throws IOException
+  {
+    JSONParser p = new JSONParser();
+    try
+    {
+      Object result = p.parse(in);
+      if(result instanceof JSONArray)
+      {
+        return JSONConverter.readArray((JSONArray)result, elementType);
+      }
+      throw new IllegalArgumentException("data does not contain a JSON array");
+    }
+    catch(ParseException ex)
+    {
+      throw new IOException(ex);
+    }
+  }
+
+  public static void write(Path outfile, Object sourcedata) throws IOException
+  {
+    try(Writer output = Files.newBufferedWriter(outfile, StandardCharsets.UTF_8,
+        StandardOpenOption.TRUNCATE_EXISTING))
+    {
+      write(output, sourcedata);
     }
   }
 
